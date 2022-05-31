@@ -4,10 +4,18 @@
 
 namespace TodoApp.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/todo")]
     [ApiController]
     public class TaskController : ControllerBase
     {
+
+        private readonly TodoApplicationDbContext dbContext;
+
+        public TaskController(TodoApplicationDbContext db)
+        {
+            this.dbContext = db;
+
+        }
         // GET: api/<TaskController>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -17,15 +25,23 @@ namespace TodoApp.Controllers
 
         // GET api/<TaskController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public string GetItem(int id)
         {
             return "value";
         }
 
         // POST api/<TaskController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult> Post([FromBody] Item item)
         {
+            if (ModelState.IsValid)
+            {
+                dbContext.Items.Add(item);
+                await dbContext.SaveChangesAsync();
+                return CreatedAtAction("GetItem", new { id = item.Id }, item);
+            }
+
+            return BadRequest();
         }
 
         // PUT api/<TaskController>/5
