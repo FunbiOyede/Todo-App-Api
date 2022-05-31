@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace TodoApp.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/weather")]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -28,6 +28,14 @@ namespace TodoApp.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+
+        [HttpGet("index")]
+        public ActionResult Index()
+        {
+            return Ok("Funbi");
+
         }
     }
 }
