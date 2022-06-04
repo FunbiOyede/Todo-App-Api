@@ -55,10 +55,6 @@ namespace TodoApp.Controllers
         public async Task<ActionResult> Put(int id, [FromBody] Item value)
         {
 
-            if (id != value.Id)
-            {
-                return BadRequest();
-            }
             dbContext.Entry(value).State = EntityState.Modified;
 
 
