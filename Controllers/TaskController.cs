@@ -17,17 +17,23 @@ namespace TodoApp.Controllers
 
         }
         // GET: api/<TaskController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpGet("all")]
+        public async Task<ActionResult> GetAllItems()
         {
-            return new string[] { "value1", "value2" };
+            var items = await dbContext.Items.ToListAsync();
+            return Ok(items);
         }
 
         // GET api/<TaskController>/5
         [HttpGet("{id}")]
-        public string GetItem(int id)
+        public async Task<ActionResult> GetItem(int id)
         {
-            return "value";
+            var item = await dbContext.Items.FindAsync(id);
+            if (item != null)
+            {
+                return Ok(item);
+            }
+            return NotFound();
         }
 
         // POST api/<TaskController>
@@ -46,14 +52,57 @@ namespace TodoApp.Controllers
 
         // PUT api/<TaskController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ActionResult> Put(int id, [FromBody] Item value)
         {
+
+            if (id != value.Id)
+            {
+                return BadRequest();
+            }
+            dbContext.Entry(value).State = EntityState.Modified;
+
+
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+
+                if (!dbContext.Items.Any(p => p.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw ex;
+                }
+
+
+            }
+
+
+            return NoContent();
+
+
+
         }
+
+
+
 
         // DELETE api/<TaskController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<ActionResult<Item>> Delete(int id)
         {
+            var item = await dbContext.Items.FindAsync(id);
+            if (item != null)
+            {
+                dbContext.Items.Remove(item);
+                await dbContext.SaveChangesAsync();
+                return item;
+            }
+            return NotFound();
         }
     }
 }
