@@ -21,6 +21,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.MapGet("/", () => "Hello world");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

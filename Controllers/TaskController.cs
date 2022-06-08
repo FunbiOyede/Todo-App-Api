@@ -9,11 +9,13 @@ namespace TodoApp.Controllers
     public class TaskController : ControllerBase
     {
 
+        private readonly ILogger<TaskController> _logger;
         private readonly TodoApplicationDbContext dbContext;
 
-        public TaskController(TodoApplicationDbContext db)
+        public TaskController(TodoApplicationDbContext db, ILogger<TaskController> logger)
         {
             this.dbContext = db;
+            _logger = logger;
 
         }
         // GET: api/<TaskController>
@@ -67,6 +69,7 @@ namespace TodoApp.Controllers
 
                 if (!dbContext.Items.Any(p => p.Id == id))
                 {
+                    _logger.LogInformation("Item not found");
                     return NotFound();
                 }
                 else
