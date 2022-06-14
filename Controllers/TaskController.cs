@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TodoApp.Data.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,18 +12,20 @@ namespace TodoApp.Controllers
 
         private readonly ILogger<TaskController> _logger;
         private readonly TodoApplicationDbContext dbContext;
+        private readonly ITaskService service;
 
-        public TaskController(TodoApplicationDbContext db, ILogger<TaskController> logger)
+        public TaskController(TodoApplicationDbContext db, ITaskService appService, ILogger<TaskController> logger)
         {
-            this.dbContext = db;
+            dbContext = db;
             _logger = logger;
+            service = appService;
 
         }
         // GET: api/<TaskController>
         [HttpGet("all")]
         public async Task<ActionResult> GetAllItems()
         {
-            var items = await dbContext.Items.ToListAsync();
+            var items = await service.GetAll();
             return Ok(items);
         }
 
@@ -30,7 +33,7 @@ namespace TodoApp.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetItem(int id)
         {
-            var item = await dbContext.Items.FindAsync(id);
+            var item = await service.GetById(id);
             if (item != null)
             {
                 return Ok(item);
@@ -40,29 +43,25 @@ namespace TodoApp.Controllers
 
         // POST api/<TaskController>
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Item item)
+        public async Task<ActionResult> CreateItem([FromBody] Item item)
         {
             if (ModelState.IsValid)
             {
-                dbContext.Items.Add(item);
-                await dbContext.SaveChangesAsync();
-                return CreatedAtAction("GetItem", new { id = item.Id }, item);
+                var CreatedItem = await service.Create(item);
+                return CreatedAtAction("GetItem", new { id = CreatedItem.Id }, CreatedItem);
             }
 
-            return BadRequest();
+            return BadRequest(ModelState);
         }
+
 
         // PUT api/<TaskController>/5
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] Item value)
+        public async Task<ActionResult> UpdateItem(int id, [FromBody] Item value)
         {
-
-            dbContext.Entry(value).State = EntityState.Modified;
-
-
             try
             {
-                await dbContext.SaveChangesAsync();
+                await service.Update(value);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -92,14 +91,13 @@ namespace TodoApp.Controllers
 
         // DELETE api/<TaskController>/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Item>> Delete(int id)
+        public async Task<ActionResult<Item>> DeleteItem(int id)
         {
-            var item = await dbContext.Items.FindAsync(id);
+            var item = await service.GetById(id);
             if (item != null)
             {
-                dbContext.Items.Remove(item);
-                await dbContext.SaveChangesAsync();
-                return item;
+                var deletedItem = await service.Delete(item);
+                return deletedItem;
             }
             return NotFound();
         }
