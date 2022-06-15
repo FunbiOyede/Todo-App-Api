@@ -14,10 +14,10 @@ namespace TodoApp.Controllers
         private readonly TodoApplicationDbContext dbContext;
         private readonly ITaskService service;
 
-        public TaskController(TodoApplicationDbContext db, ITaskService appService, ILogger<TaskController> logger)
+        public TaskController(TodoApplicationDbContext db, ITaskService appService)
         {
             dbContext = db;
-            _logger = logger;
+            //  _logger = logger;
             service = appService;
 
         }
@@ -68,7 +68,7 @@ namespace TodoApp.Controllers
 
                 if (!dbContext.Items.Any(p => p.Id == id))
                 {
-                    _logger.LogInformation("Item not found");
+                    //    _logger.LogInformation("Item not found");
                     return NotFound();
                 }
                 else
@@ -91,13 +91,13 @@ namespace TodoApp.Controllers
 
         // DELETE api/<TaskController>/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Item>> DeleteItem(int id)
+        public async Task<ActionResult> DeleteItem(int id)
         {
             var item = await service.GetById(id);
             if (item != null)
             {
                 var deletedItem = await service.Delete(item);
-                return deletedItem;
+                return Ok(deletedItem);
             }
             return NotFound();
         }
